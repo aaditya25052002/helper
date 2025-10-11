@@ -14,6 +14,24 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  test-packages:
+    runs-on: ${{ github.repository == 'antiwork/helper' && 'ubicloud-standard-2' || 'ubuntu-latest' }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+          cache: "pnpm"
+
+      - run: pnpm install
+
+      - name: Run package tests
+        run: pnpm run-on-packages test
+
   test:
     runs-on: ${{ github.repository == 'antiwork/helper' && 'ubicloud-standard-2' || 'ubuntu-latest' }}
     strategy:
@@ -33,13 +51,6 @@ jobs:
           cache: "pnpm"
 
       - run: pnpm install
-
-      - name: Build Packages
-        run: pnpm run-on-packages build
-
-      - name: Run package tests
-        if: matrix.shard == 1
-        run: pnpm run-on-packages test
 
       - name: Run tests (shard ${{ matrix.shard }}/${{ matrix.total }})
         run: pnpm test:unit -- --pool=threads --shard=${{ matrix.shard }}/${{ matrix.total }}
