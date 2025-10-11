@@ -22,10 +22,10 @@ export default defineConfig({
     },
     passWithNoTests: true,
     watch: false,
-    fileParallelism: false,
+    fileParallelism: true,
     testTimeout: isEvals ? 1000000 : 10000,
     sequence: {
-      concurrent: false,
+      concurrent: true,
     },
     include,
     setupFiles,
