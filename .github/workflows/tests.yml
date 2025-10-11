@@ -53,4 +53,4 @@ jobs:
       - run: pnpm install
 
       - name: Run tests (shard ${{ matrix.shard }}/${{ matrix.total }})
-        run: pnpm test:unit -- --pool=threads --shard=${{ matrix.shard }}/${{ matrix.total }}
+        run: pnpm vitest run --pool=threads --shard=${{ matrix.shard }}/${{ matrix.total }}
