@@ -5,6 +5,7 @@ on:
     branches:
       - main
   pull_request:
+
 permissions:
   contents: read
 
@@ -13,8 +14,12 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  build:
+  test:
     runs-on: ${{ github.repository == 'antiwork/helper' && 'ubicloud-standard-2' || 'ubuntu-latest' }}
+    strategy:
+      matrix:
+        shard: [1, 2, 3, 4]
+        total: [4]
 
     steps:
       - name: Check out repository code
@@ -32,5 +37,5 @@ jobs:
       - name: Build Packages
         run: pnpm run-on-packages build
 
-      - name: Run tests
-        run: pnpm test
+      - name: Run tests (shard ${{ matrix.shard }}/${{ matrix.total }})
+        run: pnpm test -- --shard=${{ matrix.shard }}/${{ matrix.total }}
