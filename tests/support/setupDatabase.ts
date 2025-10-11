@@ -30,10 +30,10 @@ async function waitForDatabase(connectionString: string, maxRetries = 30, delay 
   }
 }
 
-export async function setupDockerTestDb() {
+export async function setupDockerTestDb({ port = 5445 }: { port?: number } = {}) {
   console.log("Starting Docker test database setup...");
 
-  const POSTGRES_PORT = 5445;
+  const POSTGRES_PORT = port;
 
   console.log("Initializing PostgreSQL container...");
   const container = await new GenericContainer("supabase/postgres:15.8.1.100")

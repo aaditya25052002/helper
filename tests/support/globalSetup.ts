@@ -7,9 +7,18 @@ import { setupDockerTestDb } from "./setupDatabase";
 let testDatabase: Awaited<ReturnType<typeof setupDockerTestDb>> | undefined;
 
 export async function setup({ provide }: TestProject) {
-  console.log("Starting global setup...");
-  console.log("Setting up Docker test database...");
-  testDatabase = await setupDockerTestDb();
+  // eslint-disable-next-line no-restricted-properties -- VITEST_POOL_ID is a Vitest-specific env var
+  const shardId = process.env.VITEST_POOL_ID || "1";
+  const basePort = 5432;
+  const port = basePort + (parseInt(shardId) - 1) * 10; // Each shard gets its own port
+
+  console.log(`Starting global setup for shard ${shardId}...`);
+  console.log(`Setting up Docker test database on port ${port}...`);
+
+  testDatabase = await setupDockerTestDb({
+    port,
+  });
+
   console.log("Docker test database setup completed successfully.");
   provide("TEST_DATABASE_URL", testDatabase.connectionString);
 }
