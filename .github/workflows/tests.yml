@@ -72,7 +72,6 @@ jobs:
       - name: Run tests (node ${{ matrix.ci_node_index }})
         run: |
           pnpm vitest run \
-            --pool=threads \
             --reporter=junit \
             --reporter=default \
             --outputFile.junit=tmp/junit-reports/junit-${{ matrix.ci_node_index }}.xml \
