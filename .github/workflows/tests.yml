@@ -35,9 +35,9 @@ jobs:
   test:
     runs-on: ${{ github.repository == 'antiwork/helper' && 'ubicloud-standard-2' || 'ubuntu-latest' }}
     strategy:
+      fail-fast: false
       matrix:
-        shard: [1, 2, 3, 4]
-        total: [4]
+        ci_node_index: [0, 1, 2, 3]
 
     steps:
       - name: Check out repository code
@@ -52,5 +52,36 @@ jobs:
 
       - run: pnpm install
 
-      - name: Run tests (shard ${{ matrix.shard }}/${{ matrix.total }})
-        run: pnpm vitest run --pool=threads --shard=${{ matrix.shard }}/${{ matrix.total }}
+      - name: Download previous test timing reports
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          branch: main
+          name: vitest-junit-reports
+          path: tmp/junit-reports-downloaded
+        continue-on-error: true
+
+      - name: Split tests by timings
+        uses: r7kamura/split-tests-by-timings@v0
+        id: split-tests
+        with:
+          reports: tmp/junit-reports-downloaded
+          glob: '**/*.test.{js,ts,jsx,tsx}'
+          index: ${{ matrix.ci_node_index }}
+          total: 4
+
+      - name: Run tests (node ${{ matrix.ci_node_index }})
+        run: |
+          pnpm vitest run \
+            --pool=threads \
+            --reporter=junit \
+            --reporter=default \
+            --outputFile.junit=tmp/junit-reports/junit-${{ matrix.ci_node_index }}.xml \
+            ${{ steps.split-tests.outputs.paths }}
+
+      - name: Upload test timing reports
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: error
+          name: vitest-junit-reports
+          path: tmp/junit-reports
