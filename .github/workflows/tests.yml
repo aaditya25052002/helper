@@ -65,7 +65,7 @@ jobs:
         id: split-tests
         with:
           reports: tmp/junit-reports-downloaded
-          glob: 'test/**/*.test.{js,ts,jsx,tsx}'
+          glob: 'tests/**/*.{test,spec}.{js,ts,jsx,tsx}'
           index: ${{ matrix.ci_node_index }}
           total: 4
 
